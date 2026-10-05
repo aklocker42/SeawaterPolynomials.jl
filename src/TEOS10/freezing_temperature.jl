@@ -39,7 +39,7 @@ const aᶠ = 1.4289763856964e-5
 const bᶠ = 0.057000649899720
 
 """
-    freezing_conservative_temperature(Sᴬ, p, saturation_fraction = 1)
+    Θᶠ(Sᴬ, p, saturation_fraction = 1)
 
 Return the TEOS-10 conservative temperature ``Θᶠ`` at which seawater of absolute salinity ``Sᴬ`` freezes at sea
 pressure ``p``, from the polynomial fit of McDougall et al. (2014), which is accurate to within
@@ -59,14 +59,14 @@ Direct translation of `gsw_ct_freezing_poly` of https://github.com/TEOS-10/GSW-C
 - McDougall, T. J., P. M. Barker, R. Feistel and B. K. Galton-Fenzi, 2014: Melting of ice and sea ice into
   seawater and frazil ice formation. Journal of Physical Oceanography, 44, 1751–1775.
 """
-@inline function freezing_conservative_temperature(Sᴬ, p, saturation_fraction = 1)
+@inline function Θᶠ(Sᴬ, p, saturation_fraction = 1)
     Sᴬ, p, saturation_fraction = map(float, promote(Sᴬ, p, saturation_fraction))
     FT = typeof(Sᴬ)
     Sᵣ = Sᴬ / 100
     x  = sqrt(Sᵣ)
     pᵣ = p * FT(rp)
 
-    Θᶠ = FT(cᶠ₀) + Sᵣ * (FT(cᶠ₁) + x * (FT(cᶠ₂) + x * (FT(cᶠ₃) + x * (FT(cᶠ₄) + x * (FT(cᶠ₅) + FT(cᶠ₆) * x))))) +
+    Θᵖ = FT(cᶠ₀) + Sᵣ * (FT(cᶠ₁) + x * (FT(cᶠ₂) + x * (FT(cᶠ₃) + x * (FT(cᶠ₄) + x * (FT(cᶠ₅) + FT(cᶠ₆) * x))))) +
          pᵣ * (FT(cᶠ₇) + pᵣ * (FT(cᶠ₈) + FT(cᶠ₉) * pᵣ)) +
          Sᵣ * pᵣ * (FT(cᶠ₁₀) + pᵣ * (FT(cᶠ₁₂) + pᵣ * (FT(cᶠ₁₅) + FT(cᶠ₂₁) * Sᵣ)) +
                     Sᵣ * (FT(cᶠ₁₃) + FT(cᶠ₁₇) * pᵣ + FT(cᶠ₁₉) * Sᵣ) +
@@ -74,13 +74,13 @@ Direct translation of `gsw_ct_freezing_poly` of https://github.com/TEOS-10/GSW-C
 
     air_correction = saturation_fraction * (FT(a₀) - FT(aᶠ) * Sᴬ) * (1 + FT(bᶠ) * (1 - Sᴬ / FT(Sₒ)))
 
-    return Θᶠ - air_correction
+    return Θᵖ - air_correction
 end
 
 """
-    freezing_conservative_temperature_salinity_derivative(Sᴬ, p, saturation_fraction = 1)
+    ∂Θᶠ∂Sᴬ(Sᴬ, p, saturation_fraction = 1)
 
-Return ``∂Θᶠ/∂Sᴬ``, the derivative of [`freezing_conservative_temperature`](@ref) with respect to absolute
+Return ``∂Θᶠ/∂Sᴬ``, the derivative of [`Θᶠ`](@ref) with respect to absolute
 salinity at fixed sea pressure, in K/(g/kg). This is the exact derivative of the polynomial fit. It matches
 `gsw_ct_freezing_first_derivatives_poly` of https://github.com/TEOS-10/GSW-C for air-free seawater, and
 differs by the sign of one term of the dissolved-air correction (about ``3 × 10⁻⁶`` K kg/g) otherwise.
@@ -90,7 +90,7 @@ differs by the sign of one term of the dissolved-air correction (about ``3 × 10
 - `p`  : sea pressure (absolute pressure - 10.1325 dbar)             [dbar]
 - `saturation_fraction` : saturation fraction of dissolved air, 0 (air-free) to 1 (air-saturated)
 """
-@inline function freezing_conservative_temperature_salinity_derivative(Sᴬ, p, saturation_fraction = 1)
+@inline function ∂Θᶠ∂Sᴬ(Sᴬ, p, saturation_fraction = 1)
     Sᴬ, p, saturation_fraction = map(float, promote(Sᴬ, p, saturation_fraction))
     FT = typeof(Sᴬ)
     x  = sqrt(Sᴬ / 100)
@@ -108,9 +108,9 @@ differs by the sign of one term of the dissolved-air correction (about ``3 × 10
 end
 
 """
-    freezing_conservative_temperature_pressure_derivative(Sᴬ, p)
+    ∂Θᶠ∂p(Sᴬ, p)
 
-Return ``∂Θᶠ/∂p``, the derivative of [`freezing_conservative_temperature`](@ref) with respect to sea pressure
+Return ``∂Θᶠ/∂p``, the derivative of [`Θᶠ`](@ref) with respect to sea pressure
 at fixed absolute salinity, in K/dbar. It does not depend on the saturation fraction.
 Translation of `gsw_ct_freezing_first_derivatives_poly` of https://github.com/TEOS-10/GSW-C,
 which returns the same derivative in K/Pa.
@@ -119,7 +119,7 @@ which returns the same derivative in K/Pa.
 - `Sᴬ` : absolute salinity                                           [g/kg]
 - `p`  : sea pressure (absolute pressure - 10.1325 dbar)             [dbar]
 """
-@inline function freezing_conservative_temperature_pressure_derivative(Sᴬ, p)
+@inline function ∂Θᶠ∂p(Sᴬ, p)
     Sᴬ, p = map(float, promote(Sᴬ, p))
     FT = typeof(Sᴬ)
     Sᵣ = Sᴬ / 100

@@ -7,9 +7,9 @@ export
     Θ_from_T,
     θ_from_T,
     θ_from_Θ,
-    freezing_conservative_temperature,
-    freezing_conservative_temperature_salinity_derivative,
-    freezing_conservative_temperature_pressure_derivative
+    Θᶠ,
+    ∂Θᶠ∂Sᴬ,
+    ∂Θᶠ∂p
 
 using SeawaterPolynomials: AbstractSeawaterPolynomial, BoussinesqEquationOfState
 
